@@ -97,11 +97,10 @@ ConversionRate=PayingUsers/TotalUsers
 TotalRevenue=sum(PR$purch)
 ARPU=TotalRevenue/TotalUsers
 ARRPU=TotalRevenue/PayingUsers
-hola=data.frame("Metrics" = c('Conversion Rate','ARPU','ARRPU'), "Values" = c(ConversionRate,ARPU,ARRPU))
-knitr::kable(hola[1:2], caption = "Monetization Metrics", align = "cc")
+MetricsTable=data.frame("Metrics" = c('Conversion Rate','ARPU','ARRPU'), "Values" = c(ConversionRate,ARPU,ARRPU))
+knitr::kable(MetricsTable[1:2], caption = "Monetization Metrics", align = "cc")
 ```
 # 5. A/B testing
-
 ## 5.1 Hypotheses
 
 null: mean engagement gate 40 > mean engagement gate 30
@@ -128,8 +127,40 @@ pie(c(sum(DS$sum_gamerounds[DS$version=="gate_30"]), sum(DS$sum_gamerounds[DS$ve
 ```
 
 ##5.3 Computation
+```{r, echo=TRUE}
+samplesizeGate30=length(DS$sum_gamerounds[DS$version=="gate_30"])
+samplemeanGate30=Gate30gamerounds_mean
+samplesdGate30=Gate30gamerounds_sd
 
+samplesizeGate40=length(DS$sum_gamerounds[DS$version=="gate_40"])
+samplemeanGate40=Gate40gamerounds_mean
+samplesdGate40=Gate40gamerounds_sd
 
+mean_result=samplemeanGate30-samplemeanGate40
+
+sqrt_operation1=samplesdGate30^2/samplesizeGate30
+sqrt_operation2=samplesdGate40^2/samplesizeGate40
+
+observedStatistic=mean_result/sqrt(sqrt_operation1+sqrt_operation2)
+
+numerator=(((samplesdGate30^2)/(samplesizeGate30))+((samplesdGate30^2)/(samplesizeGate30)))^2
+denominator1=((samplesdGate30^2)/(samplesizeGate30))^2/(samplesizeGate30-1)
+denominator2=((samplesdGate40^2)/(samplesizeGate40))^2/(samplesizeGate40-1)
+
+df=numerator/(denominator1+denominator2)
+
+criticalValue=qt(0.05, df, lower.tail=FALSE)
+observedStatistic>criticalValue
+
+pvalue=pt(observedStatistic, df, lower.tail=FALSE)
+pvalue<0.05
+```
+
+##5.4 Conclusion of A/B testing
+We can see that the observed statistic is in the acceptance area, thus the H0 can't be rejected.
+Also, we tested the alternative process (computing the pvalue) and we can see that the pvalue is > than the alpha, thus the H0 can't be rejected again.
+As a result, we can say that:
+We didn't find enough evidence to say that the players that moving gate to level 40 improves engagement of the users significantly. In conclusion, players with the gate 40 don't have more engagement than the players of the gate 30.
 
 # 6. Regression analysis
 ```{r, echo=FALSE}
