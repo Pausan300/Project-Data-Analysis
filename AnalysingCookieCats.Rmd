@@ -35,42 +35,69 @@ table(DS$retention_1)
 ## 2.2  Preprocessing dataset “Cookie Cats Purchases”
 First, we will change all the negative values in purch to positive, and remove the EUR chars. Then, we will remove all the NA values in the dataset.
 ```{r, echo=FALSE}
-PR$purch[PR$purch=="-2.29EUR"]="2.29EUR"
-PR$purch[PR$purch=="-54.99EUR"]="54.99EUR"
-PR$purch[PR$purch=="-10.99EUR"]="10.99EUR"
-PR$purch[PR$purch=="-21.99EUR"]="21.99EUR"
+PR$purch=gsub("[-]", "", PR$purch)
 PR$purch=gsub("[a-zA-Z]", "", PR$purch)
 PR$purch=as.numeric(PR$purch)
 PR=na.omit(PR)
 table(PR$purch)
-##sum(ds.pur$purch<0)
-##ds.pur=ds.pur(ds.pur$purch<0, )
-##sum(ds.pur$purch<0, na.rm=TRUE)
 ```
 
 # 3. Descriptive analytics
 ## 3.1 Dataset “Cookie Cats AB Testing”
 ### 3.1.1 Users that downloaded the game
 ```{r, echo=FALSE}
-nrow(DS)
+TotalUsers=nrow(DS)
+cat("Total number of users that downloaded the game: ", TotalUsers)
 ```
 ### 3.1.2 Distribution of users in groups
 ```{r, echo=FALSE}
-pie_labels=paste0(names(table(DS$version)), " = ", round(100*table(DS$version)/sum(table(DS$version)), 2), "%")
-pie(table(DS$version), labels=pie_labels)
+DistributionUsers_labels=paste0(names(table(DS$version)), " = ", round(100*table(DS$version)/sum(table(DS$version)), 2), "% (", table(DS$version), ")")
+pie(table(DS$version), labels=DistributionUsers_labels, main="Distribution of users in groups")
 ```
 ### 3.1.3 Game rounds
 ```{r, echo=FALSE}
-boxplot(DS$sum_gamerounds[DS$version=="gate_30"$])
+boxplot(DS$sum_gamerounds[DS$version=="gate_30"], DS$sum_gamerounds[DS$version=="gate_40"], xlab="Groups", ylab="Num of Rounds", names=c("Gate_30", "Gate_40"), main="Game Rounds per each group")
+Gate30gamerounds_mean=mean(DS$sum_gamerounds[DS$version=="gate_30"])
+Gate30gamerounds_sd=sd(DS$sum_gamerounds[DS$version=="gate_30"])
+Gate40gamerounds_mean=mean(DS$sum_gamerounds[DS$version=="gate_40"])
+Gate40gamerounds_sd=sd(DS$sum_gamerounds[DS$version=="gate_40"])
+cat("Gate 30 Mean: ", Gate30gamerounds_mean, " and Standard Deviation: ", Gate30gamerounds_sd)
+cat("\nGate 40 Mean: ", Gate40gamerounds_mean, " and Standard Deviation: ", Gate40gamerounds_sd)
+```
+### 3.1.4 Retention (day 1 and day 7)
+We can see that there is a retention rate of 44,52% for day 1, whereas for day 7 the rate is 18,61% 
+```{r, echo=FALSE}
+RetentionDay1_labels=paste0(names(table(DS$retention_1)), " = ", round(100*table(DS$retention_1)/sum(table(DS$retention_1)), 2), "%")
+pie(table(DS$retention_1), labels=RetentionDay1_labels, main="Day 1 User Retention Rate")
+RetentionDay7_labels=paste0(names(table(DS$retention_7)), " = ", round(100*table(DS$retention_7)/sum(table(DS$retention_7)), 2), "%")
+pie(table(DS$retention_7), labels=RetentionDay7_labels, main="Day 7 User Retention Rate")
+```
+
+### 3.1.5 Are there non-playing users?
+```{r, echo=FALSE}
+NonPlayingUsers_pie=c(length(DS$sum_gamerounds[DS$sum_gamerounds==0]), length(DS$sum_gamerounds[DS$sum_gamerounds>0]))
+NonPlayingUsers_labels=paste0(c("Non-playing users", "Playing users"), " = ", round(100*NonPlayingUsers_pie/sum(table(DS$sum_gamerounds)), 2), "%\n (", NonPlayingUsers_pie, ")")
+pie(NonPlayingUsers_pie, labels=NonPlayingUsers_labels, main="Non-playing Users")
 ```
 
 ## 3.2 Dataset “Cookie Cats Purchases”
 ```{r, echo=FALSE}
-
+barplot_labels=paste0(names(table(PR$purch)), "EUR")
+barplot(table(PR$purch), xlab="Money Spent", ylab="Num of Users", names.arg=barplot_labels, main="Purchases made by users")
+Purchases_mean=mean(PR$purch)
+Purchases_sd=sd(PR$purch)
+cat("Purchases Mean: ", Purchases_mean, " and Standard Devation: ", Purchases_sd)
 ```
 
 # 4. Monetization metrics
-
+```{r, echo=FALSE}
+PayingUsers=length(PR$id)
+ConversionRate=PayingUsers/TotalUsers
+TotalRevenue=sum(PR$purch)
+ARPU=TotalRevenue/TotalUsers
+ARRPU=TotalRevenue/PayingUsers
+kable(ConversionRate)
+```
 # 5. A/B testing
 
 # 6. Regression analysis
