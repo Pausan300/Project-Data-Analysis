@@ -54,6 +54,7 @@ cat("Total number of users that downloaded the game: ", TotalUsers)
 DistributionUsers_labels=paste0(names(table(DS$version)), " = ", round(100*table(DS$version)/sum(table(DS$version)), 2), "% (", table(DS$version), ")")
 pie(table(DS$version), labels=DistributionUsers_labels, main="Distribution of users in groups")
 ```
+
 ### 3.1.3 Game rounds
 ```{r, echo=FALSE}
 boxplot(DS$sum_gamerounds[DS$version=="gate_30"], DS$sum_gamerounds[DS$version=="gate_40"], xlab="Groups", ylab="Num of Rounds", names=c("Gate_30", "Gate_40"), main="Game Rounds per each group")
@@ -96,9 +97,39 @@ ConversionRate=PayingUsers/TotalUsers
 TotalRevenue=sum(PR$purch)
 ARPU=TotalRevenue/TotalUsers
 ARRPU=TotalRevenue/PayingUsers
-kable(ConversionRate)
+hola=data.frame("Metrics" = c('Conversion Rate','ARPU','ARRPU'), "Values" = c(ConversionRate,ARPU,ARRPU))
+knitr::kable(hola[1:2], caption = "Monetization Metrics", align = "cc")
 ```
 # 5. A/B testing
+
+## 5.1 Hypotheses
+
+null: mean engagement gate 40 > mean engagement gate 30
+
+Alternative: mean engagement gate 40 <= mean engagement gate 30
+
+## 5.2 Visualisation
+```{r, echo=FALSE}
+boxplot(DS$sum_gamerounds[DS$version=="gate_30"], DS$sum_gamerounds[DS$version=="gate_40"], xlab="Groups", ylab="Num of Rounds", names=c("Gate_30", "Gate_40"), main="Game Rounds per each group")
+
+Gate30gamerounds_mean=mean(DS$sum_gamerounds[DS$version=="gate_30"])
+
+Gate30gamerounds_sd=sd(DS$sum_gamerounds[DS$version=="gate_30"])
+
+Gate40gamerounds_mean=mean(DS$sum_gamerounds[DS$version=="gate_40"])
+
+Gate40gamerounds_sd=sd(DS$sum_gamerounds[DS$version=="gate_40"])
+
+cat("Gate 30 Mean: ", Gate30gamerounds_mean, " and Standard Deviation: ", Gate30gamerounds_sd)
+
+cat("\nGate 40 Mean: ", Gate40gamerounds_mean, " and Standard Deviation: ", Gate40gamerounds_sd)
+
+pie(c(sum(DS$sum_gamerounds[DS$version=="gate_30"]), sum(DS$sum_gamerounds[DS$version=="gate_40"])), labels = paste0(c("Gate 30", "Gate 40"), " = ", c(sum(DS$sum_gamerounds[DS$version=="gate_30"]), sum(DS$sum_gamerounds[DS$version=="gate_40"]))), main = "Total game rounds per group")
+```
+
+##5.3 Computation
+
+
 
 # 6. Regression analysis
 ```{r, echo=FALSE}
